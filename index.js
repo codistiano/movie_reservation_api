@@ -12,6 +12,7 @@ import movieRoutes from "./routes/admin/moviesRoutes.js"
 import reservationsRoutes from "./routes/admin/reservationsRoutes.js"
 import showtimeRoutes from "./routes/admin/showtimeRoutes.js"
 import userRoutes from "./routes/admin/userRoutes.js"
+import reportsRoutes from "./routes/admin/reportsRoutes.js"
 
 // importing mongoose config from db.js
 import db from './config/db.js';
@@ -34,6 +35,7 @@ app.use('/api/admin/users', userRoutes);
 app.use('/api/admin/reservations', reservationsRoutes);
 app.use('/api/admin/movies', movieRoutes);
 app.use('/api/admin/showtimes', showtimeRoutes)
+app.use('/api/admin/reports', reportsRoutes)
 
 
 app.listen(PORT, () => {
