@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const reservationSchema = new mongoose.Schema({
   user: {
@@ -21,6 +21,7 @@ const reservationSchema = new mongoose.Schema({
     enum: ['active', 'cancelled'],
     default: 'active',
   }
-}, { timestamps: true });
+});
 
-module.exports = mongoose.model('Reservation', reservationSchema);
+const Reservation = mongoose.model('Reservation', reservationSchema);
+export default Reservation;

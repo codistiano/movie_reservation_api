@@ -9,7 +9,7 @@ import authRoutes from './routes/authRoutes.js';
 
 // Importing Admin Routes
 import movieRoutes from "./routes/admin/moviesRoutes.js"
-// import reservationsRoutes from "./routes/admin/reservationsRoutes.js"
+import reservationsRoutes from "./routes/admin/reservationsRoutes.js"
 import showtimeRoutes from "./routes/admin/showtimeRoutes.js"
 import userRoutes from "./routes/admin/userRoutes.js"
 
@@ -31,7 +31,7 @@ app.use('/api/auth', authRoutes);
 
 // Admin routes
 app.use('/api/admin/users', userRoutes);
-// app.use('/api/admin/reservations', reservationsRoutes);
+app.use('/api/admin/reservations', reservationsRoutes);
 app.use('/api/admin/movies', movieRoutes);
 app.use('/api/admin/showtimes', showtimeRoutes)
 

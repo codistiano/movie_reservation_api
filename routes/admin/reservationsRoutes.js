@@ -4,19 +4,20 @@ const router = Router();
 import auth from '../../middlewares/auth.js';
 const { isLoggedIn, isAdmin } = auth;
 
+// Import db Models for testing
+import Reservation from '../../models/Reservation.js';
+
 // Controller placeholders
-// import { getAllReservations, getReservationStats } from '../../controllers/admin/reservationsController';
+import { getAllReservations, getReservationById } from '../../controllers/admin/reservationsController.js';
 
-// Get all reservations
-router.get('/', isLoggedIn, isAdmin, async (req, res) => { // getAllReservations
+// All routes are protected for admins only
+router.use(isLoggedIn, isAdmin);
 
-}
-    
-);
+router.get('/', getAllReservations);
+
+// Get a single reservation by ID
+router.get('/:id', getReservationById );
 
 // Get reservation statistics (capacity, revenue, etc.)
-router.get('/stats', isLoggedIn, isAdmin, 
-    getReservationStats
-);
 
 export default router;
