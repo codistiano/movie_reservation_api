@@ -1,10 +1,12 @@
 import Showtime from "../../models/Showtime.js";
 import Movie from "../../models/Movie.js";
+import generateSeats  from "../../utils/seatGenerator.js";
+
 
 // Controllers for showtime Routes
 export const getAllShowtimes = async (req, res) => {
   try {
-    const showtimes = await Showtime.find({});
+    const showtimes = await Showtime.find({}).select('-seats');
     res.status(200).json(showtimes);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -85,6 +87,7 @@ export const createShowtime = async (req, res) => {
     }
 
     const movieT = await Movie.findById(movie);
+    const seats = generateSeats(['A', 'B'], 5);
 
     // No overlap found, create the new showtime
     const newShowtime = new Showtime({
@@ -93,9 +96,10 @@ export const createShowtime = async (req, res) => {
       date,
       startTime,
       endTime,
-      seatsCapacity: 30, // Default value
+      seats,
+      seatsCapacity: 10, // Default value
       seatsReservedCount: 0,
-      seatsAvailableCount: 30,
+      seatsAvailableCount: 10,
       revenue: 0,
     });
 
