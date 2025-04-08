@@ -8,11 +8,17 @@ const PORT = process.env.PORT || 5000;
 import authRoutes from './routes/authRoutes.js';
 
 // Importing Admin Routes
-import movieRoutes from "./routes/admin/moviesRoutes.js"
-import reservationsRoutes from "./routes/admin/reservationsRoutes.js"
-import showtimeRoutes from "./routes/admin/showtimeRoutes.js"
-import userRoutes from "./routes/admin/userRoutes.js"
+import adminMovieRoutes from "./routes/admin/moviesRoutes.js"
+import adminReservationRoutes from "./routes/admin/reservationsRoutes.js"
+import adminShowtimeRoutes from "./routes/admin/showtimeRoutes.js"
+import adminUserRoutes from "./routes/admin/userRoutes.js"
 import reportsRoutes from "./routes/admin/reportsRoutes.js"
+
+// Importing User Routes
+// import userMovieRoutes from "./routes/user/moviesRoutes.js"
+// import userReservationRoutes from "./routes/user/reservationsRoutes.js"
+import showtimeRoutes from "./routes/user/showtimeRoutes.js"
+// import userProfileRoutes from "./routes/user/profileRoutes.js"
 
 // importing mongoose config from db.js
 import db from './config/db.js';
@@ -31,11 +37,14 @@ app.get('/', (req, res) => {
 app.use('/api/auth', authRoutes);
 
 // Admin routes
-app.use('/api/admin/users', userRoutes);
-app.use('/api/admin/reservations', reservationsRoutes);
-app.use('/api/admin/movies', movieRoutes);
-app.use('/api/admin/showtimes', showtimeRoutes)
+app.use('/api/admin/users', adminUserRoutes);
+app.use('/api/admin/reservations', adminReservationRoutes);
+app.use('/api/admin/movies', adminMovieRoutes);
+app.use('/api/admin/showtimes', adminShowtimeRoutes)
 app.use('/api/admin/reports', reportsRoutes)
+
+// User routes
+app.use('/api/showtimes', showtimeRoutes)
 
 
 app.listen(PORT, () => {
