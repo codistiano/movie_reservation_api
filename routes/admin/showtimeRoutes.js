@@ -1,20 +1,28 @@
 import { Router } from "express";
 const router = Router();
 import auth from "../../middlewares/auth.js";
+import { validate } from "../../middlewares/validation.js";
+import { showtimeSchema } from "../../middlewares/validation.js";
 const { isLoggedIn, isAdmin } = auth;
-import { createShowtime, updateShowtime, deleteShowtime, getAllShowtimes } from '../../controllers/admin/showtimesController.js';
-
-// Importing Models for testing
+import {
+  createShowtime,
+  updateShowtime,
+  deleteShowtime,
+  getAllShowtimes,
+  getShowtime,
+} from "../../controllers/admin/showtimesController.js";
 
 // All routes are protected for admins only
 router.use(isLoggedIn, isAdmin);
 
 router.get("/", getAllShowtimes);
 
-router.post("/", createShowtime); 
+router.get("/:id", getShowtime);
 
-router.put('/:id', updateShowtime);
+router.post("/", validate(showtimeSchema), createShowtime);
 
-router.delete('/:id', deleteShowtime);        
+router.put("/:id", validate(showtimeSchema), updateShowtime);
+
+router.delete("/:id", deleteShowtime);
 
 export default router;

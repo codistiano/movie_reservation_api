@@ -1,124 +1,125 @@
 import Showtime from "../../models/Showtime.js";
+import Reservation from "../../models/Reservation.js";
+import {
+  AppError,
+  NotFoundError,
+  ValidationError,
+} from "../../middlewares/errorHandler.js";
 
-export const getAllShowtimes = async (req, res) => {
+export const getAllShowtimes = async (req, res, next) => {
   try {
-    const allShowtimes = await Showtime.find().select("-seats");
-    const now = new Date();
-    const filtered = allShowtimes.filter((show) => {
-      const [h, m] = show.startTime.split(":").map(Number);
-      const dt = new Date(show.date);
-      dt.setHours(h, m, 0, 0);
-      return dt > now;
+    const showtimes = await Showtime.find({})
+      .populate("movie", "title duration poster")
+      .select("-seats")
+      .sort({ date: 1, startTime: 1 });
+
+    res.status(200).json({
+      status: "success",
+      results: showtimes.length,
+      data: { showtimes },
     });
-    res.status(200).json(filtered);
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    next(new AppError("Error fetching showtimes", 500));
   }
 };
 
-export const getShowtimeById = async (req, res) => {
+export const getShowtimeById = async (req, res, next) => {
   try {
-    const showtime = await Showtime.findById(req.params.id);
+    const showtime = await Showtime.findById(req.params.id)
+      .populate("movie", "title duration poster")
+      .select("-seats");
+
     if (!showtime) {
-      return res.status(404).json({ message: "Showtime not found" });
+      return next(new NotFoundError("Showtime not found"));
     }
-    res.status(200).json(showtime);
+
+    res.status(200).json({
+      status: "success",
+      data: { showtime },
+    });
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    next(new AppError("Error fetching showtime", 500));
   }
 };
 
-export const reserveaSeat = async (req, res) => {
+export const reserveSeat = async (req, res, next) => {
   try {
-    const { row, seatNumber } = req.body;
-    const userId = req.user._id;
-    const pricePerSeat = 100;
+    const { showtimeId, seatNumber } = req.body;
 
-    // Build query to find and update in one go
-    const query = {
-      _id: req.params.id,
-      [`seats.${row}`]: { $elemMatch: { seatNumber, isReserved: false } },
-    };
-
-    const update = {
-      $set: {
-        [`seats.${row}.$[elem].isReserved`]: true,
-        [`seats.${row}.$[elem].reservedBy`]: userId,
-      },
-      $inc: {
-        seatsReservedCount: 1,
-        seatsAvailableCount: -1,
-        revenue: pricePerSeat,
-      },
-    };
-
-    const options = {
-      new: true,
-      arrayFilters: [{ "elem.seatNumber": seatNumber }],
-    };
-
-    const updatedShowtime = await Showtime.findOneAndUpdate(
-      query,
-      update,
-      options
-    );
-
-    if (!updatedShowtime) {
-      return res
-        .status(400)
-        .json({ message: "Seat already reserved or not found" });
+    if (!showtimeId || !seatNumber) {
+      return next(
+        new ValidationError("Showtime ID and seat number are required")
+      );
     }
 
-    res.status(200).json({ message: "Seat reserved successfully" });
+    const showtime = await Showtime.findById(showtimeId);
+    if (!showtime) {
+      return next(new NotFoundError("Showtime not found"));
+    }
+
+    // Check if seat is available
+    const seat = showtime.seats.find((s) => s.number === seatNumber);
+    if (!seat) {
+      return next(new ValidationError("Invalid seat number"));
+    }
+    if (seat.status !== "available") {
+      return next(new ValidationError("Seat is already reserved or booked"));
+    }
+
+    // Create reservation
+    const reservation = new Reservation({
+      user: req.user._id,
+      showtime: showtimeId,
+      seatNumber,
+      status: "reserved",
+    });
+
+    // Update seat status
+    seat.status = "reserved";
+    await showtime.save();
+    await reservation.save();
+
+    res.status(201).json({
+      status: "success",
+      data: { reservation },
+    });
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    next(new AppError("Error reserving seat", 500));
   }
 };
 
-export const cancelReservation = async (req, res) => {
+export const cancelReservation = async (req, res, next) => {
   try {
-    const { row, seatNumber } = req.body;
-    const userId = req.user.userId;
-    const pricePerSeat = 100;
-
-    const query = {
+    const reservation = await Reservation.findOne({
       _id: req.params.id,
-      [`seats.${row}`]: {
-        $elemMatch: { seatNumber, isReserved: true, reservedBy: userId },
-      },
-    };
+      user: req.user._id,
+    });
 
-    const update = {
-      $set: {
-        [`seats.${row}.$[elem].isReserved`]: false,
-        [`seats.${row}.$[elem].reservedBy`]: null,
-      },
-      $inc: {
-        seatsReservedCount: -1,
-        seatsAvailableCount: 1,
-        revenue: -pricePerSeat,
-      },
-    };
-
-    const options = {
-      new: true,
-      arrayFilters: [{ "elem.seatNumber": seatNumber }],
-    };
-
-    const updatedShowtime = await Showtime.findOneAndUpdate(
-      query,
-      update,
-      options
-    );
-
-    if (!updatedShowtime) {
-      return res
-        .status(400)
-        .json({ message: "Seat not reserved by you or doesn't exist" });
+    if (!reservation) {
+      return next(new NotFoundError("Reservation not found"));
     }
 
-    res.status(200).json({ message: "Reservation cancelled successfully" });
+    const showtime = await Showtime.findById(reservation.showtime);
+    if (!showtime) {
+      return next(new NotFoundError("Showtime not found"));
+    }
+
+    // Update seat status
+    const seat = showtime.seats.find(
+      (s) => s.number === reservation.seatNumber
+    );
+    if (seat) {
+      seat.status = "available";
+      await showtime.save();
+    }
+
+    await reservation.deleteOne();
+
+    res.status(204).json({
+      status: "success",
+      data: null,
+    });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    next(new AppError("Error canceling reservation", 500));
   }
 };

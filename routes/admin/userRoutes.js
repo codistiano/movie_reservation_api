@@ -1,20 +1,26 @@
-import { Router } from 'express';
+import { Router } from "express";
 const router = Router();
 
-import User from '../../models/User.js';
-
-import auth from '../../middlewares/auth.js';
+import auth from "../../middlewares/auth.js";
 const { isLoggedIn, isAdmin } = auth;
-// Controller placeholders
-import { getAllUsers, promoteUserToAdmin, demoteAdminToUser } from '../../controllers/admin/usersController.js';
 
-// Get all users (admin only)
-router.get('/', isLoggedIn, isAdmin, getAllUsers);
+// Import controllers
+import {
+  getAllUsers,
+  promoteUserToAdmin,
+  demoteAdminToUser,
+} from "../../controllers/admin/usersController.js";
+
+// All routes are protected for admins only
+router.use(isLoggedIn, isAdmin);
+
+// Get all users
+router.get("/", getAllUsers);
 
 // Promote a user to admin
-router.put('/promote/:id', isLoggedIn, isAdmin, promoteUserToAdmin);
+router.put("/promote/:id", promoteUserToAdmin);
 
 // Demote an admin to user
-router.put('/demote/:id', isLoggedIn, isAdmin, demoteAdminToUser)
+router.put("/demote/:id", demoteAdminToUser);
 
 export default router;

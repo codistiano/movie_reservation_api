@@ -1,61 +1,101 @@
 // Controllers for admin users routes
 import User from "../../models/User.js";
+import {
+  AppError,
+  NotFoundError,
+  ValidationError,
+} from "../../middlewares/errorHandler.js";
 
-export const getAllUsers = async (req, res) => {    // Get all users
+export const getAllUsers = async (req, res, next) => {
+  // Get all users
   try {
-    const users = await User.find({});
-    const usersList = [];
+    const users = await User.find({}).select("-password");
 
-    usersList.push({
-      message: "Here is the list of all the users",
-      Notice:
-        "To promote a user to admin, use the PUT /admin/users/promote/:id endpoint using the _id of the user and to demote use the PUT /admin/users/demote/:id endpoint",
+    res.status(200).json({
+      status: "success",
+      results: users.length,
+      data: {
+        users: users.map((user) => ({
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          reservationsHistory: user.reservationsHistory,
+        })),
+      },
     });
-
-    users.forEach((user) => {
-      const { _id, name, email, role, reservationsHistory } = user;
-      usersList.push({ _id, name, email, role, reservationsHistory });
-    });
-
-    res.status(200).json(usersList);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    next(new AppError("Error fetching users", 500));
   }
 };
 
-export const promoteUserToAdmin = async (req, res) => {   // promote user to admin
+export const promoteUserToAdmin = async (req, res, next) => {
+  // promote user to admin
   try {
     const { id } = req.params;
     const user = await User.findById(id);
+
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    } else if (user.role == "admin") {
-      return res.status(403).json({ message: "This user is already an admin"})
+      return next(new NotFoundError("User not found"));
     }
+
+    if (user.role === "admin") {
+      return next(new ValidationError("This user is already an admin"));
+    }
+
     user.role = "admin";
     await user.save();
-    res.status(200).json({ message: "User promoted to admin" });
+
+    res.status(200).json({
+      status: "success",
+      data: {
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+        },
+      },
+    });
   } catch (error) {
-    res.status(500).json({ message: "Invalid User ID" });
+    next(new AppError("Error promoting user to admin", 500));
   }
 };
 
-export const demoteAdminToUser = async (req, res) => {   // demote admin to user
+export const demoteAdminToUser = async (req, res, next) => {
+  // demote admin to user
   try {
     const { id } = req.params;
-    if (req.user.id == id) {
-      return res.status(403).json({ message: "You cannot demote yourself" });
+
+    // Prevent self-demotion
+    if (req.user.id === id) {
+      return next(new ValidationError("You cannot demote yourself"));
     }
+
     const user = await User.findById(id);
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    } else if (user.role == "user") {
-      return res.status(403).json({ message: "This user is already a regular user" })
+      return next(new NotFoundError("User not found"));
     }
+
+    if (user.role === "user") {
+      return next(new ValidationError("This user is already a regular user"));
+    }
+
     user.role = "user";
     await user.save();
-    res.status(200).json({ message: "Admin demoted to user" });
+
+    res.status(200).json({
+      status: "success",
+      data: {
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+        },
+      },
+    });
   } catch (error) {
-    res.status(500).json({ message: "Invalid User ID!" });
+    next(new AppError("Error demoting admin to user", 500));
   }
 };

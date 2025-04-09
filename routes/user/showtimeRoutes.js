@@ -4,18 +4,26 @@ import auth from "../../middlewares/auth.js";
 const { isLoggedIn } = auth;
 
 // Importing controllers
-import { getAllShowtimes, getShowtimeById, reserveaSeat, cancelReservation } from "../../controllers/user/showtimesController.js";
+import {
+  getAllShowtimes,
+  getShowtimeById,
+  reserveSeat,
+  cancelReservation,
+} from "../../controllers/user/showtimesController.js";
 
 // All routes are protected by isLoggedIn middleware
 router.use(isLoggedIn);
 
-// Showtimes routes
+// Get all showtimes
 router.get("/", getAllShowtimes);
 
+// Get showtime by ID
 router.get("/:id", getShowtimeById);
 
-router.post("/:id/reserve", reserveaSeat);
+// Reserve a seat
+router.post("/reserve", reserveSeat);
 
-router.delete("/:id/cancel", cancelReservation);
+// Cancel reservation
+router.delete("/reservations/:id", cancelReservation);
 
 export default router;

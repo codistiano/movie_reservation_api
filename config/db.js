@@ -1,15 +1,17 @@
 import mongoose from "mongoose";
 
-mongoose.connection.on("connected", () => {
-  console.log("Connected To Database");
-});
-
-mongoose.connection.on("error", (err) => {
-  console.log("Database connection error!");
-});
+const connect = async (uri) => {
+  try {
+    await mongoose.connect(uri);
+    console.log("Connected to Database");
+  } catch (error) {
+    console.error("MongoDB connection error:", error);
+    process.exit(1);
+  }
+};
 
 mongoose.connection.on("disconnected", () => {
   console.log("Database disconnected!");
 });
 
-export default mongoose;
+export default { connect };

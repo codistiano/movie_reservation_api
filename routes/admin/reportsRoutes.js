@@ -1,18 +1,30 @@
-import { Router } from 'express';
-const router = Router();
-import auth from '../../middlewares/auth.js';
+import express from "express";
+import {
+  getTotalReport,
+  getShowtimeReport,
+  getMovieReport,
+  getDailyReport,
+} from "../../controllers/admin/reportsController.js";
+import auth from "../../middlewares/auth.js";
+
+const router = express.Router();
+
 const { isLoggedIn, isAdmin } = auth;
+router.use(isLoggedIn, isAdmin);
 
-// Importing Controllers for the routes below
-import { getTotalReport, getShowtimeReport } from '../../controllers/admin/reportsController.js';
+// Get overall statistics
+router.get("/total", getTotalReport);
 
-router.use(isLoggedIn, isAdmin)
+// Get specific showtime report
+router.get(
+  "/showtime/:showtimeId",
+  getShowtimeReport
+);
 
-// Get Brief Report on Users, Movies, and Revenue
-router.get('/', getTotalReport)
+// Get specific movie report
+router.get("/movie/:movieId", getMovieReport);
 
-// Get a Report about a specific movie showtime
-router.get('/:id', getShowtimeReport)
-
+// Get daily report
+router.get("/daily", getDailyReport);
 
 export default router;
