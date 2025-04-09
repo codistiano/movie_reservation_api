@@ -1,23 +1,34 @@
-import { Router } from 'express';
+import { Router } from "express";
 const router = Router();
 
-import auth from '../../middlewares/auth.js';
+import auth from "../../middlewares/auth.js";
 const { isLoggedIn, isAdmin } = auth;
 
-// Import db Models for testing
-import Reservation from '../../models/Reservation.js';
-
 // Controller placeholders
-import { getAllReservations, getReservationById } from '../../controllers/admin/reservationsController.js';
+import {
+  getAllReservations,
+  getReservationById,
+  cancelReservation,
+  getReservationsSummary,
+  getDailyReservations,
+} from "../../controllers/admin/reservationsController.js";
 
 // All routes are protected for admins only
 router.use(isLoggedIn, isAdmin);
 
-router.get('/', getAllReservations);
+// Get all reservations with optional filters
+router.get("/", getAllReservations);
 
 // Get a single reservation by ID
-router.get('/:id', getReservationById );
+router.get("/:id", getReservationById);
 
-// Get reservation statistics (capacity, revenue, etc.)
+// Cancel any reservation
+router.delete("/:id", cancelReservation);
+
+// Get reservation statistics
+router.get("/reports/summary", getReservationsSummary);
+
+// Get daily reservation report
+router.get("/reports/daily", getDailyReservations);
 
 export default router;

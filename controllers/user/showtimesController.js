@@ -25,17 +25,34 @@ export const getAllShowtimes = async (req, res, next) => {
 
 export const getShowtimeById = async (req, res, next) => {
   try {
-    const showtime = await Showtime.findById(req.params.id)
-      .populate("movie", "title duration poster")
-      .select("-seats");
+    const showtime = await Showtime.findById(req.params.id).populate(
+      "movie",
+      "title duration poster"
+    );
 
     if (!showtime) {
       return next(new NotFoundError("Showtime not found"));
     }
 
+    // Get seat statistics
+    const availableSeats = showtime.getAvailableSeats();
+    const reservedSeats = showtime.getReservedSeats();
+    const bookedSeats = showtime.getBookedSeats();
+
     res.status(200).json({
       status: "success",
-      data: { showtime },
+      data: {
+        showtime: {
+          ...showtime.toObject(),
+          seats: undefined, // Don't send the full seats array
+        },
+        statistics: {
+          totalSeats: showtime.totalSeats,
+          availableSeats: availableSeats.length,
+          reservedSeats: reservedSeats.length,
+          bookedSeats: bookedSeats.length,
+        },
+      },
     });
   } catch (error) {
     next(new AppError("Error fetching showtime", 500));
