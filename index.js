@@ -1,13 +1,17 @@
 import dotenv from "dotenv";
-dotenv.config();
+import mongoose from "mongoose";
 import express, { json } from "express";
 import helmet from "helmet";
 import cors from "cors";
 import rateLimit from "express-rate-limit";
 import { errorHandler } from "./middlewares/errorHandler.js";
+import app from "./app.js";
+import connectDB from "./config/db.js";
 
-const app = express();
-const PORT = process.env.PORT || 5000;
+// Load environment variables
+dotenv.config();
+
+const PORT = process.env.PORT || 3000;
 
 // Security Middleware
 app.use(helmet()); // Security headers
@@ -22,45 +26,17 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-// Routes Importing
-import authRoutes from "./routes/authRoutes.js";
-
-// Importing Admin Routes
-import adminMovieRoutes from "./routes/admin/moviesRoutes.js";
-import adminReservationRoutes from "./routes/admin/reservationsRoutes.js";
-import adminShowtimeRoutes from "./routes/admin/showtimeRoutes.js";
-import adminUserRoutes from "./routes/admin/userRoutes.js";
-import reportsRoutes from "./routes/admin/reportsRoutes.js";
-
-// Importing User Routes
-// import userMovieRoutes from "./routes/user/moviesRoutes.js"
-// import userReservationRoutes from "./routes/user/reservationsRoutes.js"
-import showtimeRoutes from "./routes/user/showtimeRoutes.js";
-// import userProfileRoutes from "./routes/user/profileRoutes.js"
-
-// importing mongoose config from db.js
-import db from "./config/db.js";
-
-// Connecting to the database
-db.connect(process.env.DB_URI || "mongodb://localhost/movie_reservation_api");
+// Handle unhandled promise rejections
+process.on("unhandledRejection", (err) => {
+  console.error("Unhandled Rejection! Shutting down...");
+  console.error(err);
+  process.exit(1);
+});
 
 // Health check endpoint
 app.get("/health", (req, res) => {
   res.status(200).json({ status: "ok", timestamp: new Date().toISOString() });
 });
-
-// Routes
-app.use("/api/auth", authRoutes);
-
-// Admin routes
-app.use("/api/admin/users", adminUserRoutes);
-app.use("/api/admin/reservations", adminReservationRoutes);
-app.use("/api/admin/movies", adminMovieRoutes);
-app.use("/api/admin/showtimes", adminShowtimeRoutes);
-app.use("/api/admin/reports", reportsRoutes);
-
-// User routes
-app.use("/api/showtimes", showtimeRoutes);
 
 // Error handling middleware (should be last)
 app.use(errorHandler);
@@ -73,6 +49,18 @@ app.use((req, res) => {
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+// Connect to database and start server
+const startServer = async () => {
+  try {
+    await connectDB();
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+  } catch (error) {
+    console.error("Failed to start server:", error);
+    process.exit(1);
+  }
+};
+
+// Start the server
+startServer();

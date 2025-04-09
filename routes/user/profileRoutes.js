@@ -1,30 +1,29 @@
 import express from "express";
-import { isLoggedIn } from "../../middlewares/auth.js";
+import auth from "../../middlewares/auth.js";
 import { validate } from "../../middlewares/validation.js";
 import { userSchema } from "../../middlewares/validation.js";
 import {
   getProfile,
   updateProfile,
   changePassword,
-  getBookings,
-  getReviews,
+  getReservations,
 } from "../../controllers/user/profileController.js";
 
 const router = express.Router();
+const { isLoggedIn } = auth;
+
+router.use(isLoggedIn)
 
 // Get user profile
-router.get("/", isLoggedIn, getProfile);
+router.get("/", getProfile);
 
 // Update user profile
-router.patch("/", isLoggedIn, validate(userSchema), updateProfile);
+router.patch("/", validate(userSchema), updateProfile);
 
 // Change password
-router.patch("/password", isLoggedIn, changePassword);
+router.patch("/password", changePassword);
 
 // Get user's bookings
-router.get("/bookings", isLoggedIn, getBookings);
-
-// Get user's reviews
-router.get("/reviews", isLoggedIn, getReviews);
+router.get("/bookings", getReservations);
 
 export default router;

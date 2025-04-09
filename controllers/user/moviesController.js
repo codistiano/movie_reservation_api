@@ -1,7 +1,6 @@
 import Movie from "../../models/Movie.js";
 import Showtime from "../../models/Showtime.js";
-import Review from "../../models/Review.js";
-import AppError from "../../utils/AppError.js";
+import { AppError } from "../../middlewares/errorHandler.js";
 
 // Get all movies (with optional filters)
 export const getAllMovies = async (req, res, next) => {
@@ -60,9 +59,9 @@ export const getMovieShowtimes = async (req, res, next) => {
     }
 
     // Get showtimes for this movie
-    const showtimes = await Showtime.find({ movie: req.params.id })
-      .populate("theater")
-      .sort("startTime");
+    const showtimes = await Showtime.find({ movie: req.params.id }).sort(
+      "startTime"
+    );
 
     res.status(200).json({
       status: "success",
@@ -71,29 +70,5 @@ export const getMovieShowtimes = async (req, res, next) => {
     });
   } catch (error) {
     next(new AppError("Error fetching showtimes", 500));
-  }
-};
-
-// Get reviews for a specific movie
-export const getMovieReviews = async (req, res, next) => {
-  try {
-    const movie = await Movie.findById(req.params.id);
-
-    if (!movie) {
-      return next(new AppError("Movie not found", 404));
-    }
-
-    // Get reviews for this movie
-    const reviews = await Review.find({ movie: req.params.id })
-      .populate("user", "name")
-      .sort("-createdAt");
-
-    res.status(200).json({
-      status: "success",
-      results: reviews.length,
-      data: { reviews },
-    });
-  } catch (error) {
-    next(new AppError("Error fetching reviews", 500));
   }
 };

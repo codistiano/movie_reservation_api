@@ -1,17 +1,16 @@
 import mongoose from "mongoose";
 
-const connect = async (uri) => {
+const connectDB = async () => {
   try {
-    await mongoose.connect(uri);
-    console.log("Connected to Database");
+    const conn = await mongoose.connect(
+      process.env.MONGODB_URI || "mongodb://localhost/movie_reservation_api"
+    );
+    console.log(`MongoDB Connected: ${conn.connection.host}`);
+    return conn;
   } catch (error) {
-    console.error("MongoDB connection error:", error);
+    console.error(`Error: ${error.message}`);
     process.exit(1);
   }
 };
 
-mongoose.connection.on("disconnected", () => {
-  console.log("Database disconnected!");
-});
-
-export default { connect };
+export default connectDB;

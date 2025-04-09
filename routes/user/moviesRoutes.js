@@ -1,15 +1,16 @@
 import express from "express";
-import { isLoggedIn } from "../../middlewares/auth.js";
-import { validate } from "../../middlewares/validation.js";
-import { movieSchema } from "../../middlewares/validation.js";
+import auth from "../../middlewares/auth.js";
 import {
   getAllMovies,
   getMovieById,
   getMovieShowtimes,
-  getMovieReviews,
 } from "../../controllers/user/moviesController.js";
 
 const router = express.Router();
+
+const { isLoggedIn } = auth;
+
+router.use(isLoggedIn)
 
 // Get all movies (with optional filters)
 router.get("/", getAllMovies);
@@ -19,8 +20,5 @@ router.get("/:id", getMovieById);
 
 // Get showtimes for a specific movie
 router.get("/:id/showtimes", getMovieShowtimes);
-
-// Get reviews for a specific movie
-router.get("/:id/reviews", getMovieReviews);
 
 export default router;

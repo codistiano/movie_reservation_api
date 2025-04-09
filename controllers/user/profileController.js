@@ -1,7 +1,6 @@
 import User from "../../models/User.js";
-import Booking from "../../models/Booking.js";
-import Review from "../../models/Review.js";
-import AppError from "../../utils/AppError.js";
+import Reservation from "../../models/Reservation.js";
+import { AppError } from "../../middlewares/errorHandler.js";
 import bcrypt from "bcryptjs";
 
 // Get user profile
@@ -86,37 +85,20 @@ export const changePassword = async (req, res, next) => {
   }
 };
 
-// Get user's bookings
-export const getBookings = async (req, res, next) => {
+// Get user's reservations
+export const getReservations = async (req, res, next) => {
   try {
-    const bookings = await Booking.find({ user: req.user._id })
+    const reservations = await Reservation.find({ user: req.user._id })
       .populate("showtime")
       .populate("movie")
       .sort("-createdAt");
 
     res.status(200).json({
       status: "success",
-      results: bookings.length,
-      data: { bookings },
+      results: reservations.length,
+      data: { reservations },
     });
   } catch (error) {
-    next(new AppError("Error fetching bookings", 500));
-  }
-};
-
-// Get user's reviews
-export const getReviews = async (req, res, next) => {
-  try {
-    const reviews = await Review.find({ user: req.user._id })
-      .populate("movie")
-      .sort("-createdAt");
-
-    res.status(200).json({
-      status: "success",
-      results: reviews.length,
-      data: { reviews },
-    });
-  } catch (error) {
-    next(new AppError("Error fetching reviews", 500));
+    next(new AppError("Error fetching reservations", 500));
   }
 };
