@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const connectDB = async () => {
   try {
     const conn = await mongoose.connect(
-      process.env.MONGODB_URI || "mongodb://localhost/movie_reservation_api"
+      process.env.DB_URI || "mongodb://localhost/movie_reservation_api"
     );
     console.log(`MongoDB Connected: ${conn.connection.host}`);
     return conn;

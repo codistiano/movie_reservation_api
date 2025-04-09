@@ -4,6 +4,7 @@ import cors from "cors";
 import rateLimit from "express-rate-limit";
 import { specs } from "./config/swagger.js";
 import swaggerUi from "swagger-ui-express";
+import healthRoutes from "./routes/healthRoutes.js";
 
 // Import routes
 import authRoutes from "./routes/authRoutes.js";
@@ -39,13 +40,15 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
+app.get("/", async(req, res) => {
+  res.send("Nothing to look at here!")
+});
+
 // API Documentation
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
 
-// Health check endpoint
-app.get("/health", (req, res) => {
-  res.status(200).json({ status: "ok", timestamp: new Date().toISOString() });
-});
+// Health check route
+app.use("/api/health", healthRoutes);
 
 // Routes
 app.use("/api/auth", authRoutes);

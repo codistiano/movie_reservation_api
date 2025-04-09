@@ -5,8 +5,6 @@ services:
     buildCommand: npm install
     startCommand: npm start
     envVars:
-      - key: PORT
-        value: 3000
       - key: NODE_ENV
         value: production
       - key: MONGODB_URI
@@ -14,4 +12,9 @@ services:
       - key: JWT_SECRET
         sync: false
       - key: JWT_EXPIRES_IN
-        value: 7d
+        value: 90d
+      - key: PORT
+        value: 10000
+    healthCheckPath: /api/health
+    autoDeploy: true
+    plan: free
