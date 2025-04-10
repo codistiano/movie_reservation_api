@@ -2,28 +2,28 @@ import express from "express";
 import helmet from "helmet";
 import cors from "cors";
 import rateLimit from "express-rate-limit";
-import { specs } from "./config/swagger.js";
+import { specs } from "./src/config/swagger.js";
 import swaggerUi from "swagger-ui-express";
-import healthRoutes from "./routes/healthRoutes.js";
+import healthRoutes from "./src/routes/healthRoutes.js";
 
 // Import routes
-import authRoutes from "./routes/authRoutes.js";
+import authRoutes from "./src/routes/authRoutes.js";
 
 // Admin Routes
-import adminMovieRoutes from "./routes/admin/moviesRoutes.js";
-import adminReservationRoutes from "./routes/admin/reservationsRoutes.js";
-import adminShowtimeRoutes from "./routes/admin/showtimeRoutes.js";
-import adminUserRoutes from "./routes/admin/userRoutes.js";
-import reportsRoutes from "./routes/admin/reportsRoutes.js";
+import adminMovieRoutes from "./src/routes/admin/moviesRoutes.js";
+import adminReservationRoutes from "./src/routes/admin/reservationsRoutes.js";
+import adminShowtimeRoutes from "./src/routes/admin/showtimeRoutes.js";
+import adminUserRoutes from "./src/routes/admin/userRoutes.js";
+import reportsRoutes from "./src/routes/admin/reportsRoutes.js";
 
 // User Routes
-import userMovieRoutes from "./routes/user/moviesRoutes.js";
-import userReservationRoutes from "./routes/user/reservationsRoutes.js";
-import userShowtimeRoutes from "./routes/user/showtimeRoutes.js";
-import userProfileRoutes from "./routes/user/profileRoutes.js";
+import userMovieRoutes from "./src/routes/user/moviesRoutes.js";
+import userReservationRoutes from "./src/routes/user/reservationsRoutes.js";
+import userShowtimeRoutes from "./src/routes/user/showtimeRoutes.js";
+import userProfileRoutes from "./src/routes/user/profileRoutes.js";
 
 // Import error handling middleware
-import { errorHandler } from "./middlewares/errorHandler.js";
+import { errorHandler } from "./src/middlewares/errorHandler.js";
 
 const app = express();
 
@@ -40,8 +40,8 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-app.get("/", async(req, res) => {
-  res.send("Nothing to look at here!")
+app.get("/", async (req, res) => {
+  res.send("Nothing to look at here!");
 });
 
 // API Documentation
