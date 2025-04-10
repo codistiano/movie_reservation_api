@@ -14,8 +14,17 @@ const options = {
     },
     servers: [
       {
-        url: "http://localhost:3000",
-        description: "Development server",
+        url:
+          process.env.NODE_ENV === "production"
+            ? `https://${
+                process.env.RENDER_EXTERNAL_URL ||
+                "movie-reservation-api.onrender.com"
+              }`
+            : "http://movie-reservation-api.onrender.com",
+        description:
+          process.env.NODE_ENV === "production"
+            ? "Production server"
+            : "Development server",
       },
     ],
     components: {
@@ -51,10 +60,10 @@ const options = {
     ],
   },
   apis: [
-    "./routes/*.js",
-    "./routes/admin/*.js",
-    "./routes/user/*.js",
-    "./models/*.js",
+    "./src/routes/*.js",
+    "./src/routes/admin/*.js",
+    "./src/routes/user/*.js",
+    "./src/models/*.js",
   ],
 };
 

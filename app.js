@@ -45,7 +45,15 @@ app.get("/", async (req, res) => {
 });
 
 // API Documentation
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
+app.use(
+  "/api-docs",
+  swaggerUi.serve,
+  swaggerUi.setup(specs, {
+    explorer: true,
+    customCss: ".swagger-ui .topbar { display: none }",
+    customSiteTitle: "Movie Reservation API Documentation",
+  })
+);
 
 // Health check route
 app.use("/api/health", healthRoutes);
